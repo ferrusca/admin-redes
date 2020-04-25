@@ -293,7 +293,7 @@ Lo siguiente será dar de alta el equipo a monitorear (Servidor VPN).
 
 
 Añadiendo el Host remoto
-==========================+
+=========================
 
 Para poder monitorear el host remoto, es necesario instalar el agente **NRPE** (_Nagios Remote Plugin Executor_) que nos va a permitir monitorear el equipo desde el exterior.
 
@@ -306,7 +306,7 @@ admin@equipo6:~$ sudo apt install nagios-nrpe-server nagios-plugins
 ![Npre-picture-install](./images/npre-install.jpeg)
 
 
-Después, editamos el archivo de configuración de NPRE para indicar al dirección IP del servidor Nagios, así como para darle acceso al mismo
+Después, editamos el archivo de configuración de NRPE para indicar al dirección IP del servidor Nagios, así como para darle acceso al mismo
 
 ```sh
 admin@equipo6:~$ sudo vim /etc/nagios/nrpe.cfg
@@ -321,9 +321,112 @@ allowed_hosts=127.0.0.1, 192.168.42.76
 
 ![npre-server-address](./images/npre-server-address.jpeg)
 
-Guardamos el archivo y reiniciamos el servicio de NPRE
+Guardamos el archivo y reiniciamos el servicio de NRPE
 ```sh
 admin@equipo6:~$ systemctl restart nagios-nrpe-server
 ```
 
+### Configuración en el Servidor de Nagios
 
+De igual manera instalamos el plugin de NRPE en el servidor
+
+Debemos añadir una ubicación para los archivos de configuración de los equipos que vamos a monitorear.
+
+Para ello, editamos el archivo de configuración `nagios.cfg`
+
+```sh
+[root@localhost ~]# vim /usr/local/nagios/etc/nagios.cfg 
+```
+
+Y añadimos un directorio para servidores: 
+`cfg_dir=/usr/local/nagios/etc/servers`
+
+![directives](./images/nagios-cfg.jpeg)
+
+Ahora, creamos el directorio recien especificado, y creamos el archivo de configuración para el servidor a monitorear
+
+```sh
+[root@localhost ~]# mkdir -p /usr/local/nagios/etc/servers
+[root@localhost ~]# vim /usr/local/nagios/etc/servers/openvpn-server.cfg
+```
+
+En este archivo especificaremos la ip del servidor a monitorear, y algunos servicios como: *carga del servidor 
+*usuarios logueados
+*procesos activos 
+*estado de la partición root 
+*uso de la memoria swap
+
+```sh
+define host{
+            use                     linux-server
+            host_name               openvpn-server
+            alias                   openvpn-server
+            address                 192.168.42.218
+
+}
+
+define hostgroup{
+            hostgroup_name          linux-server
+            alias                   Linux Servers
+            members                 openvpn-server
+}
+
+define service{
+            use                     local-service
+            host_name               openvpn-server
+            service_description     SWAP Uasge
+            check_command           check_nrpe!check_swap
+
+}
+
+define service{
+            use                     local-service
+            host_name               openvpn-server
+            service_description     Root / Partition
+            check_command           check_nrpe!check_root
+
+}
+define service{
+            use                     local-service
+            host_name               openvpn-server
+            service_description     Current Users
+            check_command           check_nrpe!check_users
+}
+
+define service{
+            use                     local-service
+            host_name               openvpn-server
+            service_description     Total Processes
+            check_command           check_nrpe!check_total_procs
+}
+
+define service{
+            use                     local-service
+            host_name               openvpn-server
+            service_description     Current Load
+            check_command           check_nrpe!check_load
+}
+```
+
+Una vez guardado el archivo, verificamos que no tenga errores
+```sh
+[root@localhost ~]# /usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
+```
+![check-file](./images/syntax-check.jpeg)
+
+Reiniciamos el servicio
+```sh
+[root@localhost ~]# systemctl restart nagios
+```
+
+Y ahora podemos ver que en la interfaz web ya aparece el servidor siendo monitoreado
+
+![nagios-hosts-list](./images/nagios-hosts.jpeg)
+
+Hacemos ping al servidor en cuestion
+
+![ping-al-servidor](./images/nagios-ping.jpeg)
+
+Y asímismo podemos ver los servicios que están siendo monitoreados
+
+![nagios-services-list](./images/nagios-services.jpeg)
