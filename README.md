@@ -350,11 +350,13 @@ Ahora, creamos el directorio recien especificado, y creamos el archivo de config
 [root@localhost ~]# vim /usr/local/nagios/etc/servers/openvpn-server.cfg
 ```
 
-En este archivo especificaremos la ip del servidor a monitorear, y algunos servicios como: *carga del servidor 
-*usuarios logueados
-*procesos activos 
-*estado de la partición root 
-*uso de la memoria swap
+En este archivo especificaremos la ip del servidor a monitorear, y algunos servicios como:
+
+* carga del servidor 
+* usuarios logueados
+* procesos activos 
+* estado de la partición root 
+* uso de la memoria swap
 
 ```sh
 define host{
