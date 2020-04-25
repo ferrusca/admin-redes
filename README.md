@@ -10,7 +10,7 @@ Para configurar el servidor de VPN utilizaremos **_OpenVPN_**, mientras que para
 Ambos se pueden descargar directamente de los repositorios oficiales:
 
 ```sh
-ferrusca@ferrusca:~$ sudo apt install openvpn easy-rsa
+admin@equipo6:~$ sudo apt install openvpn easy-rsa
 ```
 
 #### Creación de la Autoridad Certificadora
@@ -20,7 +20,7 @@ Con _EasyRSA_ es más facil la creación de la autoridad que expedirá los certi
 Para ello, ejecutamos: 
 
 ```sh
-ferrusca@ferrusca:~$ make-cadir ~/caroot
+admin@equipo6:~$ make-cadir ~/caroot
 ```
 
 Lo cual nos creará un directorio con todo lo necesario para el funcionamiento de la CA, por ejemplo un directorio para llaves, los archivos de configuración de _OpenSSL_, directorios para _requests_ y _revocaciones_ y el archivo **_vars_** que contendrá la información necesaria para la expedicion de peticiones de certificado.
@@ -30,7 +30,7 @@ Lo cual nos creará un directorio con todo lo necesario para el funcionamiento d
 Editamos el archivo _vars_ para proveer los valores del _CSR_ por defecto
 
 ```sh
-ferrusca@ferrusca:~$ vim caroot/vars
+admin@equipo6:~$ vim caroot/vars
 ```
 
 Editamos las siguientes líneas del archivo:
@@ -48,22 +48,22 @@ export KEY_NAME="equipo6"
 
 Guardamos el archivo, lo leemos y limpiamos el workspace:
 ```sh
-ferrusca@ferrusca:~$ source caroot/vars
-ferrusca@ferrusca:~$ ./caroot/clean-all
+admin@equipo6:~$ source caroot/vars
+admin@equipo6:~$ ./caroot/clean-all
 ```
 
 Ahora, creamos la Autoridad Certificadora ejecutando el script de _EasyRSA_ 
 
 ```sh
-ferrusca@ferrusca:~$ ./caroot/build-ca
+admin@equipo6:~$ ./caroot/build-ca
 ```
 
 En caso de que no se encuentre el archivo `openssl.cnf`, conviene hacer una liga del archivo que de configuración que viene dentro del directorio
 
 ```sh
-ferrusca@ferrusca:~$ cd caroot/
-ferrusca@ferrusca:~/caroot$ ln -s openssl-1.0.0.cnf openssl.cnf
-ferrusca@ferrusca:~$ ./build-ca
+admin@equipo6:~$ cd caroot/
+admin@equipo6:~/caroot$ ln -s openssl-1.0.0.cnf openssl.cnf
+admin@equipo6:~$ ./build-ca
 ```
 
 ![build-ca](./images/build-ca.jpeg)
@@ -74,7 +74,7 @@ Creando la llave para el servidor
 Una vez creada nuestra la CA, expediremos una llave y certificado para el servidor OpenVPN, hay que especificar el **Common Name** o nombre del equipo que lo utilizará, este nombre debe ser único
 
 ```sh
-ferrusca@ferrusca:~/caroot$ ./build-key-server server
+admin@equipo6:~/caroot$ ./build-key-server server
 ```
 
 ![build-ley-server](./images/build-key-server1.jpeg)
@@ -84,8 +84,8 @@ ferrusca@ferrusca:~/caroot$ ./build-key-server server
 Luego, creamos la llave Diffie-Helmann para la autenticacióny de igual manera generamos la firma HMAC que servirá para verificar la integridad TLS del servidor. Esto lo hacemos ejecutando los scripts
 
 ```sh
-ferrusca@ferrusca:~/caroot$ ./build-dh
-ferrusca@ferrusca:~/caroot$ openvpn --genkey --secret keys/ta.key
+admin@equipo6:~/caroot$ ./build-dh
+admin@equipo6:~/caroot$ openvpn --genkey --secret keys/ta.key
 ```
 
 
@@ -95,7 +95,7 @@ Generación de la llave del cliente
 Para ello especificamos el CN del cliente, en este caso será `cliente1`
 
 ```sh
-ferrusca@ferrusca:~/caroot$ ./build-key client1
+admin@equipo6:~/caroot$ ./build-key client1
 ```
 
 ![build-ley-server](./images/build-client1.jpeg)
@@ -107,13 +107,13 @@ ferrusca@ferrusca:~/caroot$ ./build-key client1
 Una vez generadas las llaves y certificados para la CA, el servidor y el cliente, las colocamos en el directorio de openvpn.
 
 ```sh
-ferrusca@ferrusca:~/caroot$ cp ca.crt server.crt server.key ta.key dh2048.pem /etc/openvpn/
-ferrusca@ferrusca:~/caroot$ gunzip -c /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz | sudo tee /etc/openvpn/server.conf
+admin@equipo6:~/caroot$ cp ca.crt server.crt server.key ta.key dh2048.pem /etc/openvpn/
+admin@equipo6:~/caroot$ gunzip -c /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz | sudo tee /etc/openvpn/server.conf
 ```
 
 Editamos el archivo de configuración de OpenVPN
 ```sh
-ferrusca@ferrusca:~/caroot$ sudo vim /etc/openvpn/server.conf
+admin@equipo6:~/caroot$ sudo vim /etc/openvpn/server.conf
 ```
 
 Y ponemos las siguientes líneas 
@@ -130,14 +130,14 @@ Infraestructura del cliente
 
 Creamos una carpeta para el archivo que se generará para el cliente, hay que darle permisos de manipulación solo al usuario actual
 ```sh
-ferrusca@ferrusca:~$ mkdir -p client-configs/files
-ferrusca@ferrusca:~$ chmod 700 client-configs/files/
+admin@equipo6:~$ mkdir -p client-configs/files
+admin@equipo6:~$ chmod 700 client-configs/files/
 ```
 
 Ahora, copiamos la configuración base para _**el cliente**_ y le hacemos las modificaciones pertinentes:
 ```sh
-ferrusca@ferrusca:~$ cp /usr/share/doc/openvpn/examples/sample-config-files/client.conf ~/client-configs/base.conf
-ferrusca@ferrusca:~$ vim client-configs/base.conf 
+admin@equipo6:~$ cp /usr/share/doc/openvpn/examples/sample-config-files/client.conf ~/client-configs/base.conf
+admin@equipo6:~$ vim client-configs/base.conf 
 ```
 
 El archivo debe quedar: 
@@ -197,7 +197,7 @@ cat ${BASE_CONFIG} \
 Lo ejecutamos junto con el nombre del cliente `client1`
 
 ```sh
-ferrusca@ferrusca:~$ ./genConfigs.sh client1
+admin@equipo6:~$ ./genConfigs.sh client1
 ```
 
 Y con esto se genera el archivo de configuración para el cliente `client1.ovpn` el cual se encuentra en `~/client-configs/files`.
@@ -209,7 +209,7 @@ Transferencia del archivo
 Podemos transferir el archivo al cliente con un software para enviar de forma segura como WinSCP, o en linux con `scp`
 
 ```sh
-ferrusca@ferrusca:~$ scp client-configs/files/client1.ovpn cliente@X.X.X.X:~/location
+admin@equipo6:~$ scp client-configs/files/client1.ovpn cliente@X.X.X.X:~/location
 ```
 
 
@@ -218,7 +218,7 @@ Con esto el servidor ya se encuentra listo para recibir la petición del cliente
 Iniciamos el servicio vía `service` o `systemctl`
 
 ```sh
-ferrusca@ferrusca:~$ sudo systemctl start openvpn@server
+admin@equipo6:~$ sudo systemctl start openvpn@server
 ```
 
 Podemos revisar que la interfaz `tun0` ya se fue registrada en nuestra configuración de red 
@@ -300,7 +300,7 @@ Para poder monitorear el host remoto, es necesario instalar el agente **NRPE** (
 Para ello instalamos
 
 ```sh
-ferrusca@ferrusca:~$ sudo apt install nagios-nrpe-server nagios-plugins
+admin@equipo6:~$ sudo apt install nagios-nrpe-server nagios-plugins
 ```
 
 ![Npre-picture-install](./images/npre-install.jpeg)
@@ -309,7 +309,7 @@ ferrusca@ferrusca:~$ sudo apt install nagios-nrpe-server nagios-plugins
 Después, editamos el archivo de configuración de NPRE para indicar al dirección IP del servidor Nagios, así como para darle acceso al mismo
 
 ```sh
-ferrusca@ferrusca:~$ sudo vim /etc/nagios/nrpe.cfg
+admin@equipo6:~$ sudo vim /etc/nagios/nrpe.cfg
 ```
 
 Se editan las directivas `server_address` y  `allowed_hosts`
@@ -323,7 +323,7 @@ allowed_hosts=127.0.0.1, 192.168.42.76
 
 Guardamos el archivo y reiniciamos el servicio de NPRE
 ```sh
-ferrusca@ferrusca:~$ systemctl restart nagios-nrpe-server
+admin@equipo6:~$ systemctl restart nagios-nrpe-server
 ```
 
 
