@@ -264,6 +264,26 @@ Ahora para comprobar, hacemos un ping al servidor `10.8.0.1`
 
 ![doing-ping](./images/ping.jpeg)
 
+Instalación en dispositivo Android
+==================================
+
+Para instalar el cliente en un dispositivo Android, existen diversas aplicaciones, nosotros elegimos _**OpenVPN Connect**_, la cual es basstante ligera y tiene alto ranking
+
+![android-install](./images/android-install.jpeg)
+
+Una vez descargada, tenemos que introducir el archivo de configuración del cliente `client2.ovpn` junto con la llave `ta.key`, la generación de estos archivos se hizo en los pasos previos.
+
+![key-attachment](./images/android-import.jpeg)
+
+Damos click en IMPORT y veremos que el cliente se conectó satisfactoriamente
+
+![android-vpn-dashboard](./images/android-vpn-dashboard.jpeg)
+
+Para testear la conexión, levantamos un servidor con una pagina de inicio, el dispositivo fue capaz de acceder al sitio sobre la VPN, cuya ip es `10.8.0.1`
+
+![android-settings](./images/android-togglebar.jpeg)
+![web-server](./images/web-server.jpeg)
+
 # Monitoreo
 
 Para el monitoreo a través de SNMP, elegimos la herramienta de **Nagios**
@@ -432,3 +452,7 @@ Hacemos ping al servidor en cuestion
 Y asímismo podemos ver los servicios que están siendo monitoreados
 
 ![nagios-services-list](./images/nagios-services.jpeg)
+
+Por ejemplo, revisamos el estado de la partición _**root**_, la cual ya se encuentra con poco espacio de almacenamiento disponible
+
+![nagios-almacena](./images/nagios-disk.jpeg)
